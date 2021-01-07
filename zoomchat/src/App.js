@@ -23,6 +23,8 @@ firebase.initializeApp({
 
 const auth = firebase.auth();
 const firestore = firebase.firestore();
+const analytics = firebase.analytics();
+
 
 function App() {
 
@@ -42,6 +44,7 @@ function App() {
     </div>
   );
 }
+
 function SignIn() {
 
   const signInWithGoogle = () => {
@@ -50,58 +53,107 @@ function SignIn() {
   }
 
   return (
-      <button onClick={signInWithGoogle}>Sign in with Google</button>
+    <>
+      <button className="sign-in" onClick={signInWithGoogle}>Sign in with Google</button>
+      <p>Do not violate the community guidelines or you will be banned for life!</p>
+    </>
   )
 
 }
+
 function SignOut() {
   return auth.currentUser && (
-    <button onClick={() => auth.signOut()}>Sign Out</button>
+    <button className="sign-out" onClick={() => auth.signOut()}>Sign Out</button>
   )
 }
+
+
 function ChatRoom() {
+  // we will use this to scroll to bottom of chat on page-reload and after sending a message
   const dummy = useRef();
-  const messagesRef = firestore.collection('messages');
-  const query = messagesRef.orderBy('createdAt').limit(25);
-
-  const [messages] = useCollectionData(query, { idField: 'id' });
-
-  const [formValue, setFormValue] = useState('');
-
-
-  const sendMessage = async (e) => {
-    e.preventDefault();
-
-    const { uid, photoURL } = auth.currentUser;
-
-    await messagesRef.add({
-      text: formValue,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      uid,
-      photoURL
-    })
-
-    setFormValue('');
+  //var messages = [];
+  /*
+  useEffect(() => {
     dummy.current.scrollIntoView({ behavior: 'smooth' });
+  }, [messages])
+
+*/
+
+/*
+  // getting the message and sorting them by time of creation
+  const messagesRef = firestore.collection("messages");
+  messagesRef.orderBy('createdAt', 'asc').limit(25).then((querySnapshot)=>{
+    querySnapshot.forEach((doc)=>{
+        messages.push(doc);
+    })
+  });
+*/
+
+  const messagesRef = firestore.collection('messages');
+  const query = messagesRef.orderBy('createdAt', 'asc').limitToLast(25);
+
+  const [messages] = useCollectionData(query, {idField: 'id'});
+
+  return (
+    <div>
+      <div>
+        {/* we will loop over the message and return a
+        ChatMessage component for each message */}
+        {messages && messages.map(msg => <ChatMessage key={msg.id} message={msg} />)}
+        <span ref={dummy}></span>
+      </div>
+
+      {/* Form to type and submit messages */}
+
+      <MessageForm/>
+    </div>
+  )
+}
+
+class MessageForm extends React.Component {
+  constructor(props)
+  {
+    super(props);
+    this.state = {value: ''};
+
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleChange.bind(this);
+
   }
 
-  return (<>
-    <main>
+  handleChange(event)
+  {
+    this.setState({value:event.target.value});
+  }
 
-      {messages && messages.map(msg => <ChatMessage key={msg.id} message={msg} />)}
+  handleSubmit(event)
+  {
+    alert('A message was submitted ' + this.state.value);
 
-      <span ref={dummy}></span>
+    const { displayName, uid, photoURL } = auth.currentUser;
 
-    </main>
+    firestore.collections("messages").add({
+      user: displayName,
+      body: this.state.value,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      uid: uid,
+      photoURL: photoURL
+    })
 
-    <form onSubmit={sendMessage}>
+    // resetting form value
+    this.state.value = '';
 
-      <input value={formValue} onChange={(e) => setFormValue(e.target.value)} placeholder="Speak Your Mind" />
+    event.preventDefault();
+  }
 
-      <button type="submit" disabled={!formValue}>🕊Send</button>
-
-    </form>
-  </>)
+  render(){
+    return (
+      <form onSubmit={this.handleSubmit}>
+        <input type="text" value={this.state.value} onChange={this.handleChange} placeholder="Speak Your Mind" />
+        <button type="submit" disabled={!this.state.value}>send</button>
+      </form>
+    )
+  }
 }
 
 function ChatMessage(props) {
@@ -111,11 +163,10 @@ function ChatMessage(props) {
 
   return (<>
     <div className={`message ${messageClass}`}>
-      <img src={photoURL || 'https://api.adorable.io/avatars/23/abott@adorable.png'} />
+      <img src={photoURL || 'https://pbs.twimg.com/profile_images/1150444314188795904/TDxSmYz-_400x400.jpg'} />
       <p>{text}</p>
     </div>
   </>)
 }
-
 
 export default App;
