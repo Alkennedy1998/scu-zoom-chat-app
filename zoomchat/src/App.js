@@ -60,17 +60,19 @@ function SignOut() {
   )
 }
 function ChatRoom() {
+  const dummy = useRef();
   const messagesRef = firestore.collection('messages');
-  const query = messagesRef.orderBy('createdAt').limitToLast(25);
+  const query = messagesRef.orderBy('createdAt').limit(25);
 
-  const [messages] = useCollectionData(query,{idField:'id'});
+  const [messages] = useCollectionData(query, { idField: 'id' });
 
-  const [formValue, setFormValue] =useState('');
+  const [formValue, setFormValue] = useState('');
 
-  const sendMessage = async(e) =>{
+
+  const sendMessage = async (e) => {
     e.preventDefault();
 
-    const {uid, photoURL} = auth.currentUser;
+    const { uid, photoURL } = auth.currentUser;
 
     await messagesRef.add({
       text: formValue,
@@ -80,19 +82,15 @@ function ChatRoom() {
     })
 
     setFormValue('');
+    dummy.current.scrollIntoView({ behavior: 'smooth' });
   }
 
-  const dummy = useRef();
+  return (<>
+    <main>
 
-  useEffect(() => {
-    dummy.current.scrollIntoView({ behavior: 'smooth' });
-  }, [messages])
+      {messages && messages.map(msg => <ChatMessage key={msg.id} message={msg} />)}
 
-  return(<>
-  <main>
-    {messages && messages.map(msg => <ChatMessage key={msg.id} message={msg} />)}
-
-    <span ref={dummy}></span>
+      <span ref={dummy}></span>
 
     </main>
 
@@ -100,11 +98,10 @@ function ChatRoom() {
 
       <input value={formValue} onChange={(e) => setFormValue(e.target.value)} placeholder="Speak Your Mind" />
 
-      <button type="submit" disabled={!formValue}>send</button>
+      <button type="submit" disabled={!formValue}>🕊Send</button>
 
     </form>
-
-    </>)
+  </>)
 }
 
 function ChatMessage(props) {
@@ -119,4 +116,6 @@ function ChatMessage(props) {
     </div>
   </>)
 }
+
+
 export default App;
