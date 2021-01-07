@@ -33,12 +33,15 @@ function App() {
   return (
     <div className="App">
       <header>
-        <h1>⚛️🔥💬</h1>
+        <h1>SCU Zoom Chat</h1>
         <SignOut />
       </header>
 
       <section>
-        {user ? <ChatRoom /> : <SignIn />}
+        {user ? <ChatRoom /> : <>
+        <SignIn />
+        <AnonSignIn/>
+        </>}
       </section>
 
     </div>
@@ -55,12 +58,59 @@ function SignIn() {
   return (
     <>
       <button className="sign-in" onClick={signInWithGoogle}>Sign in with Google</button>
-      <p>Do not violate the community guidelines or you will be banned for life!</p>
+      <p>If you sign in with google your name will show up next to messages</p>
     </>
   )
 
 }
 
+class AnonSignIn extends React.Component {
+  constructor(props)
+  {
+    super(props);
+    this.state = {value: ''};
+
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+
+  }
+
+  handleChange(event)
+  {
+    this.setState({value:event.target.value});
+  }
+
+  handleSubmit(event)
+  {
+
+    firebase.auth().signInAnonymously()
+    .then(() => {
+      console.log("Signed In Anonymously");
+    })
+    .catch((error) => {
+      var errorCode = error.code;
+      var errorMessage = error.message;
+      console.log(errorMessage);
+    });
+
+    this.state.value = '';
+    event.preventDefault();
+
+  }
+
+  render(){
+  return (
+    <>
+      <form onSubmit={this.handleSubmit}>
+        <input type="text" value={this.state.value} onChange={this.handleChange} placeholder="username" />
+        <button type="submit" className ="sign-in" disabled={!this.state.value} >Sign in Anonymously</button>
+      </form>
+      <p>Use this so no one will know who is typing</p>
+    </>
+  )
+  }
+
+}
 function SignOut() {
   return auth.currentUser && (
     <button className="sign-out" onClick={() => auth.signOut()}>Sign Out</button>
@@ -69,15 +119,16 @@ function SignOut() {
 
 
 function ChatRoom() {
+
   // we will use this to scroll to bottom of chat on page-reload and after sending a message
   const dummy = useRef();
   //var messages = [];
-  /*
+
   useEffect(() => {
     dummy.current.scrollIntoView({ behavior: 'smooth' });
   }, [messages])
 
-*/
+
 
 /*
   // getting the message and sorting them by time of creation
@@ -95,18 +146,18 @@ function ChatRoom() {
   const [messages] = useCollectionData(query, {idField: 'id'});
 
   return (
-    <div>
-      <div>
+    <>
+      <main>
         {/* we will loop over the message and return a
         ChatMessage component for each message */}
         {messages && messages.map(msg => <ChatMessage key={msg.id} message={msg} />)}
         <span ref={dummy}></span>
-      </div>
+      </main>
 
       {/* Form to type and submit messages */}
 
       <MessageForm/>
-    </div>
+      </>
   )
 }
 
@@ -117,7 +168,7 @@ class MessageForm extends React.Component {
     this.state = {value: ''};
 
     this.handleChange = this.handleChange.bind(this);
-    this.handleSubmit = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
 
   }
 
@@ -128,22 +179,27 @@ class MessageForm extends React.Component {
 
   handleSubmit(event)
   {
+
     alert('A message was submitted ' + this.state.value);
 
     const { displayName, uid, photoURL } = auth.currentUser;
 
-    firestore.collections("messages").add({
+    firestore.collection("messages").add({
       user: displayName,
-      body: this.state.value,
+      text: this.state.value,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       uid: uid,
       photoURL: photoURL
     })
 
-    // resetting form value
-    this.state.value = '';
+    /*
+    .then(()=>{
 
+    });
+    */
+    this.state.value = '';
     event.preventDefault();
+
   }
 
   render(){
@@ -157,14 +213,14 @@ class MessageForm extends React.Component {
 }
 
 function ChatMessage(props) {
-  const { text, uid, photoURL } = props.message;
+  const { text, uid, user, photoURL } = props.message;
 
   const messageClass = uid === auth.currentUser.uid ? 'sent' : 'received';
 
   return (<>
     <div className={`message ${messageClass}`}>
       <img src={photoURL || 'https://pbs.twimg.com/profile_images/1150444314188795904/TDxSmYz-_400x400.jpg'} />
-      <p>{text}</p>
+      <p>{user + ": " + text}</p>
     </div>
   </>)
 }
