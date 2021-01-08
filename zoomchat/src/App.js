@@ -6,8 +6,11 @@ import 'firebase/firestore';
 import 'firebase/auth';
 import 'firebase/analytics';
 
+import crypto from ("crypto");
+
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
+import {DisplayNameContext} from './DisplayNameProvider'
 
 firebase.initializeApp({
 
@@ -21,31 +24,80 @@ firebase.initializeApp({
 
 });
 
-const auth = firebase.auth();
+var auth = firebase.auth();
 const firestore = firebase.firestore();
 const analytics = firebase.analytics();
 
-
 function App() {
 
+  crypto.createHash("sha256")
+  .update("Man oh man do I love node!")
+  .digest("hex")
   const [user] = useAuthState(auth);
 
   return (
-    <div className="App">
+       <div className="App">
       <header>
         <h1>SCU Zoom Chat</h1>
         <SignOut />
       </header>
 
-      <section>
-        {user ? <ChatRoom /> : <>
-        <SignIn />
-        <AnonSignIn/>
-        </>}
-      </section>
+      <DisplayNameContext.Consumer>
+        {({anonDisplayName,updateDisplayName})=>(
+          <section>
+          {user ? <ChatRoom anonDisplayName={anonDisplayName}/> :
+          <>
+          <SignIn />
+          <AnonSignIn updateDisplayName={updateDisplayName}/>
+          </>}
+        </section>
+        )}
+      </DisplayNameContext.Consumer>
+
 
     </div>
   );
+}
+class JoinRoom extends React.Component(){
+  constructor(props)
+  {
+    super(props);
+    this.state = {zoomLink: ''};
+
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+
+  }
+
+  handleChange(event)
+  {
+    this.setState({displayName:event.target.value});
+  }
+
+  handleSubmit(event)
+  {
+    crypto.createHash("sha256")
+    .update(this.state.zoomLink)
+    .digest("hex")
+
+    // hash zoomlink
+
+    //switch to correct chat room
+    this.state.zoomLink = '';
+    event.preventDefault();
+
+  }
+
+  render(){
+  return (
+    <>
+        <input type="text" value={this.state.zoomLink} onChange={this.handleChange} placeholder="https://scu.zoom.us/xxxxxxxxxxxxxxxxxx" />
+        <button type="submit" className = 'sign-in' disabled={!this.state.zoomLink} onClick={this.handleSubmit}>Join Room</button>
+      <p>Enter the zoom link url and you will join a room with other students from that class</p>
+    </>
+  )
+  }
+
 }
 
 function SignIn() {
@@ -68,7 +120,7 @@ class AnonSignIn extends React.Component {
   constructor(props)
   {
     super(props);
-    this.state = {value: ''};
+    this.state = {displayName: ''};
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -77,7 +129,7 @@ class AnonSignIn extends React.Component {
 
   handleChange(event)
   {
-    this.setState({value:event.target.value});
+    this.setState({displayName:event.target.value});
   }
 
   handleSubmit(event)
@@ -93,7 +145,10 @@ class AnonSignIn extends React.Component {
       console.log(errorMessage);
     });
 
-    this.state.value = '';
+    //Call update method from displayName Context
+    this.props.updateDisplayName(this.state.displayName);
+
+    this.state.displayName = '';
     event.preventDefault();
 
   }
@@ -101,10 +156,8 @@ class AnonSignIn extends React.Component {
   render(){
   return (
     <>
-      <form onSubmit={this.handleSubmit}>
-        <input type="text" value={this.state.value} onChange={this.handleChange} placeholder="username" />
-        <button type="submit" className ="sign-in" disabled={!this.state.value} >Sign in Anonymously</button>
-      </form>
+        <input type="text" value={this.state.displayName} onChange={this.handleChange} placeholder="username" />
+        <button type="submit" className = 'sign-in' disabled={!this.state.displayName} onClick={this.handleSubmit}>Sign in Anonymously</button>
       <p>Use this so no one will know who is typing</p>
     </>
   )
@@ -117,33 +170,20 @@ function SignOut() {
   )
 }
 
-
 function ChatRoom() {
 
   // we will use this to scroll to bottom of chat on page-reload and after sending a message
   const dummy = useRef();
-  //var messages = [];
-
-  useEffect(() => {
-    dummy.current.scrollIntoView({ behavior: 'smooth' });
-  }, [messages])
-
-
-
-/*
-  // getting the message and sorting them by time of creation
-  const messagesRef = firestore.collection("messages");
-  messagesRef.orderBy('createdAt', 'asc').limit(25).then((querySnapshot)=>{
-    querySnapshot.forEach((doc)=>{
-        messages.push(doc);
-    })
-  });
-*/
 
   const messagesRef = firestore.collection('messages');
   const query = messagesRef.orderBy('createdAt', 'asc').limitToLast(25);
 
   const [messages] = useCollectionData(query, {idField: 'id'});
+
+
+  useEffect(() => {
+    dummy.current.scrollIntoView({ behavior: 'smooth' });
+  }, [messages])
 
   return (
     <>
@@ -179,10 +219,22 @@ class MessageForm extends React.Component {
 
   handleSubmit(event)
   {
-
-    alert('A message was submitted ' + this.state.value);
+    alert(this.props.anonDisplayName);
 
     const { displayName, uid, photoURL } = auth.currentUser;
+
+    //Get display name from context
+    const anonDisplayName = this.props.anonDisplayName;
+
+    if(anonDisplayName && displayName == null)
+    {
+      console.log("anon name assigned")
+      displayName = anonDisplayName
+    }
+    else if(displayName == null)
+    {
+      displayName = "default";
+    }
 
     firestore.collection("messages").add({
       user: displayName,
@@ -192,11 +244,6 @@ class MessageForm extends React.Component {
       photoURL: photoURL
     })
 
-    /*
-    .then(()=>{
-
-    });
-    */
     this.state.value = '';
     event.preventDefault();
 
