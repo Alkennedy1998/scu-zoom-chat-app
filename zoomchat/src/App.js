@@ -6,11 +6,10 @@ import 'firebase/firestore';
 import 'firebase/auth';
 import 'firebase/analytics';
 
-import crypto from ("crypto");
-
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import {DisplayNameContext} from './DisplayNameProvider'
+import { sha256 } from 'react-native-sha256';
 
 firebase.initializeApp({
 
@@ -30,9 +29,10 @@ const analytics = firebase.analytics();
 
 function App() {
 
-  crypto.createHash("sha256")
-  .update("Man oh man do I love node!")
-  .digest("hex")
+  sha256("Test").then( hash => {
+    console.log(hash);
+})
+
   const [user] = useAuthState(auth);
 
   return (
@@ -76,11 +76,12 @@ class JoinRoom extends React.Component(){
 
   handleSubmit(event)
   {
-    crypto.createHash("sha256")
-    .update(this.state.zoomLink)
-    .digest("hex")
+    /*
+    sha256(this.state.zoomLink).then( hash => {
+      //switch to correct chat room
 
-    // hash zoomlink
+  })
+  */
 
     //switch to correct chat room
     this.state.zoomLink = '';
