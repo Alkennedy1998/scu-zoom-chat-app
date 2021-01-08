@@ -1,26 +1,25 @@
 import React, { useEffect, useRef, useState } from 'react';
-import './App.css';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { useCollectionData } from 'react-firebase-hooks/firestore';
+import sha256 from 'sha256';
 
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/auth';
 import 'firebase/analytics';
 
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { useCollectionData } from 'react-firebase-hooks/firestore';
-import {DisplayNameContext} from './DisplayNameProvider'
-import { sha256 } from 'react-native-sha256';
+import MessageForm from './components/MessageForm';
+import AnonSignIn from './components/AnonSignIn';
+import './App.css';
 
 firebase.initializeApp({
-
-    apiKey: "AIzaSyDrf7Sv9B1Lbqy9Evel-WQyjVrQbfKn97c",
-    authDomain: "scu-zoom-chat-app.firebaseapp.com",
-    projectId: "scu-zoom-chat-app",
-    storageBucket: "scu-zoom-chat-app.appspot.com",
-    messagingSenderId: "429074569360",
-    appId: "1:429074569360:web:9a03a76cf7a1980244a015",
-    measurementId: "G-XHBN8QJ0HZ"
-
+  apiKey: process.env.REACT_APP_API_KEY,
+  authDomain: process.env.REACT_APP_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_APP_ID,
+  measurementId: process.env.REACT_APP_MEASUREMENT_ID,
 });
 
 var auth = firebase.auth();
@@ -28,78 +27,29 @@ const firestore = firebase.firestore();
 const analytics = firebase.analytics();
 
 function App() {
-
-  sha256("Test").then( hash => {
-    console.log(hash);
-})
-
   const [user] = useAuthState(auth);
+  const [displayName, setDisplayName] = useState('');
 
   return (
-       <div className="App">
+    <div className='App'>
       <header>
         <h1>SCU Zoom Chat</h1>
         <SignOut />
       </header>
 
-      <DisplayNameContext.Consumer>
-        {({anonDisplayName,updateDisplayName})=>(
-          <section>
-          {user ? <ChatRoom anonDisplayName={anonDisplayName}/> :
-          <>
-          <SignIn />
-          <AnonSignIn updateDisplayName={updateDisplayName}/>
-          </>}
-        </section>
-        )}
-      </DisplayNameContext.Consumer>
-
-
+      <section>
+        {user
+          ? <ChatRoom displayName={displayName}/>
+          : <>
+              <SignIn />
+              <AnonSignIn setDisplayName={setDisplayName}/>
+            </>
+        }
+      </section>
     </div>
   );
 }
-class JoinRoom extends React.Component(){
-  constructor(props)
-  {
-    super(props);
-    this.state = {zoomLink: ''};
 
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-
-  }
-
-  handleChange(event)
-  {
-    this.setState({displayName:event.target.value});
-  }
-
-  handleSubmit(event)
-  {
-    /*
-    sha256(this.state.zoomLink).then( hash => {
-      //switch to correct chat room
-
-  })
-  */
-
-    //switch to correct chat room
-    this.state.zoomLink = '';
-    event.preventDefault();
-
-  }
-
-  render(){
-  return (
-    <>
-        <input type="text" value={this.state.zoomLink} onChange={this.handleChange} placeholder="https://scu.zoom.us/xxxxxxxxxxxxxxxxxx" />
-        <button type="submit" className = 'sign-in' disabled={!this.state.zoomLink} onClick={this.handleSubmit}>Join Room</button>
-      <p>Enter the zoom link url and you will join a room with other students from that class</p>
-    </>
-  )
-  }
-
-}
 
 function SignIn() {
 
@@ -110,64 +60,16 @@ function SignIn() {
 
   return (
     <>
-      <button className="sign-in" onClick={signInWithGoogle}>Sign in with Google</button>
+      <button className='sign-in' onClick={signInWithGoogle}>Sign in with Google</button>
       <p>If you sign in with google your name will show up next to messages</p>
     </>
   )
 
 }
 
-class AnonSignIn extends React.Component {
-  constructor(props)
-  {
-    super(props);
-    this.state = {displayName: ''};
-
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-
-  }
-
-  handleChange(event)
-  {
-    this.setState({displayName:event.target.value});
-  }
-
-  handleSubmit(event)
-  {
-
-    firebase.auth().signInAnonymously()
-    .then(() => {
-      console.log("Signed In Anonymously");
-    })
-    .catch((error) => {
-      var errorCode = error.code;
-      var errorMessage = error.message;
-      console.log(errorMessage);
-    });
-
-    //Call update method from displayName Context
-    this.props.updateDisplayName(this.state.displayName);
-
-    this.state.displayName = '';
-    event.preventDefault();
-
-  }
-
-  render(){
-  return (
-    <>
-        <input type="text" value={this.state.displayName} onChange={this.handleChange} placeholder="username" />
-        <button type="submit" className = 'sign-in' disabled={!this.state.displayName} onClick={this.handleSubmit}>Sign in Anonymously</button>
-      <p>Use this so no one will know who is typing</p>
-    </>
-  )
-  }
-
-}
 function SignOut() {
   return auth.currentUser && (
-    <button className="sign-out" onClick={() => auth.signOut()}>Sign Out</button>
+    <button className='sign-out' onClick={() => auth.signOut()}>Sign Out</button>
   )
 }
 
@@ -184,7 +86,7 @@ function ChatRoom() {
 
   useEffect(() => {
     dummy.current.scrollIntoView({ behavior: 'smooth' });
-  }, [messages])
+  }, [messages]);
 
   return (
     <>
@@ -197,68 +99,11 @@ function ChatRoom() {
 
       {/* Form to type and submit messages */}
 
-      <MessageForm/>
-      </>
+      <MessageForm />
+    </>
   )
 }
 
-class MessageForm extends React.Component {
-  constructor(props)
-  {
-    super(props);
-    this.state = {value: ''};
-
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-
-  }
-
-  handleChange(event)
-  {
-    this.setState({value:event.target.value});
-  }
-
-  handleSubmit(event)
-  {
-    alert(this.props.anonDisplayName);
-
-    const { displayName, uid, photoURL } = auth.currentUser;
-
-    //Get display name from context
-    const anonDisplayName = this.props.anonDisplayName;
-
-    if(anonDisplayName && displayName == null)
-    {
-      console.log("anon name assigned")
-      displayName = anonDisplayName
-    }
-    else if(displayName == null)
-    {
-      displayName = "default";
-    }
-
-    firestore.collection("messages").add({
-      user: displayName,
-      text: this.state.value,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      uid: uid,
-      photoURL: photoURL
-    })
-
-    this.state.value = '';
-    event.preventDefault();
-
-  }
-
-  render(){
-    return (
-      <form onSubmit={this.handleSubmit}>
-        <input type="text" value={this.state.value} onChange={this.handleChange} placeholder="Speak Your Mind" />
-        <button type="submit" disabled={!this.state.value}>send</button>
-      </form>
-    )
-  }
-}
 
 function ChatMessage(props) {
   const { text, uid, user, photoURL } = props.message;
@@ -268,7 +113,7 @@ function ChatMessage(props) {
   return (<>
     <div className={`message ${messageClass}`}>
       <img src={photoURL || 'https://pbs.twimg.com/profile_images/1150444314188795904/TDxSmYz-_400x400.jpg'} />
-      <p>{user + ": " + text}</p>
+      <p>{user + ': ' + text}</p>
     </div>
   </>)
 }
