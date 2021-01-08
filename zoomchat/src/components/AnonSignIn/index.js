@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import firebase from 'firebase/app';
+import { withFirebase } from '../../api/Firebase';
 
-const AnonSignIn = ({ setDisplayName }) => {
+const AnonSignIn = ({ setDisplayName, firebase }) => {
   const [value, setValue] = useState('');
 
   const handleChange = event => {
@@ -11,9 +11,9 @@ const AnonSignIn = ({ setDisplayName }) => {
   const handleSubmit = event => {
     event.preventDefault();
 
-    firebase.auth().signInAnonymously()
+    firebase.doSignInAnonymously()
       .then(() => {
-        console.log('Signed In Anonymously');
+        //console.log('Signed In Anonymously');
       })
       .catch((error) => {
         var errorCode = error.code;
@@ -35,4 +35,4 @@ const AnonSignIn = ({ setDisplayName }) => {
   );
 };
 
-export default AnonSignIn;
+export default withFirebase(AnonSignIn);

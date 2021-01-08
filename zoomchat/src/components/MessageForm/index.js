@@ -1,21 +1,18 @@
 import React, { Component, useEffect, useRef, useState } from 'react';
-import firebase from 'firebase/app';
+import { withFirebase } from '../../api/Firebase';
 
 import '../../App.css';
 
-var auth = firebase.auth();
-const firestore = firebase.firestore();
+const MessageForm = ({ displayName, firebase })=>{
 
-const MessageForm = ({anonDisplayName})=>{
-
-  const [value,setValue] =useState('');
+  const [value,setValue] = useState('');
 
   const handleChange = event => {
     setValue(event.target.value);
   };
 
   const handleSubmit = event => {
-    const { displayName, uid, photoURL } = auth.currentUser;
+    const { displayName, uid, photoURL } = firebase.auth.currentUser;
 
     if (anonDisplayName && displayName == null) {
       console.log('anon name assigned');
@@ -24,10 +21,10 @@ const MessageForm = ({anonDisplayName})=>{
       displayName = 'default';
     }
 
-    firestore.collection('messages').add({
+    firebase.firestore.collection('messages').add({
       user: displayName,
       text: value,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdAt: firebase.app.firestore.FieldValue.serverTimestamp(), // this might have an error with firebase.firestore (not the functioncall, firebase.firestore())
       uid: uid,
       photoURL: photoURL
     });
@@ -55,4 +52,4 @@ const MessageForm = ({anonDisplayName})=>{
 }
 
 
-export default MessageForm;
+export default withFirebase(MessageForm);
