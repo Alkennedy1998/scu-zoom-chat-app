@@ -23,6 +23,9 @@ function App({firebase}) {
   const [roomId, setRoomId] = useState('');
   // const muiTheme = createMuiTheme(colorData);
 
+  AuthStateListener() {
+
+  }
   FirebaseAuth.addAuthStateListener(AuthStateListener);
 
   window.addEventListener('keydown', (event) => {
