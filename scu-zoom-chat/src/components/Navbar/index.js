@@ -1,25 +1,35 @@
-import React from 'react'
-import {Link} from 'react-router-dom'
-import { withFirebase } from '../../api/Firebase';
-
+/* eslint-disable react/prop-types */
+import React from 'react';
+import {withFirebase} from '../../api/Firebase';
+import {withRouter} from 'react-router-dom';
 import InfoIcon from '@material-ui/icons/Info';
-import colorData from '../../mui/colorData'
 import MeetingRoomIcon from '@material-ui/icons/MeetingRoom';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 
-const Navbar = ({firebase,roomId,setRoomId,props}) =>{
+const Navbar = ({firebase, roomId, setRoomId, history}) =>{
+  const handleAboutClick = () => {
+    history.push('/about');
+  };
+  return (
+    <header className="header">
+      <h1>SCU Zoom Chat</h1>
+      <div className='nav-button-group'>
 
-    const handleAboutClick = () => {
-        props.history.push('/about');
-    }
-    return(
-        <header>
-              <h1>SCU Zoom Chat</h1>
-              <AccountCircleIcon onClick={firebase.doSignOut} disabled={!firebase.auth.currentUser}/>
-              <MeetingRoomIcon onClick={() => setRoomId('')} disabled={!roomId}/>
-              <InfoIcon onClick={handleAboutClick}/>
-        </header>
-    )
-}
+        <span className='nav-button'>
+          <AccountCircleIcon onClick={() => {
+            firebase.doSignOut(); history.push('');
+          }} />
+        </span>
 
-export default withFirebase(Navbar);
+        <span className='nav-button'>
+          <MeetingRoomIcon onClick={() => setRoomId('')} />
+        </span>
+        <span className='nav-button'>
+          <InfoIcon onClick={handleAboutClick}/>
+        </span>
+      </div>
+    </header>
+  );
+};
+
+export default withRouter(withFirebase(Navbar));

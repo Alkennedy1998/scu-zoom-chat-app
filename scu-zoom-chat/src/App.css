@@ -1,5 +1,6 @@
 body {
   background-color: #282c34;
+  color: #fff;
 }
 
 .App {
@@ -8,7 +9,7 @@ body {
   margin: 0 auto;
 }
 
-.App header {
+.header {
   /*background-color: #b30738;*/
   background-color:#7c0013;
   height: 10vh;
@@ -16,7 +17,6 @@ body {
   color: white;
   position: fixed;
   width: 100%;
-  max-width: 728px;
   top: 0;
   display: flex;
   align-items: center;
@@ -38,6 +38,7 @@ body {
 main {
   padding: 10px;
   height: 80vh;
+  width: 100%;
   margin: 10vh 0 10vh;
   overflow-y: scroll;
   display: flex;
@@ -65,7 +66,8 @@ form {
   bottom: 0;
   background-color: rgb(24, 23, 23);
   width: 100%;
-  max-width: 728px;
+  margin-left: 10%;
+  margin-right: 10%;
   display: flex;
   font-size: 1.5rem;
 }
@@ -104,16 +106,26 @@ button:disabled {
   cursor: not-allowed;
 }
 
-
 .sign-in {
   color: #282c34;
   background: white;
   max-width: 400px;
   margin: 0 auto;
+  margin-top: 50px;
 }
 
+.google-sign-in {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
 
-
+.anon-sign-in {
+  color: #282c34;
+  background: white;
+  margin-top: 50px;
+}
 
 ul, li {
   text-align: left;
@@ -156,4 +168,22 @@ img {
   height: 40px;
   border-radius: 50%;
   margin: 2px 5px;
+}
+
+.page-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 200px;
+  margin-left: 10%;
+  margin-right: 10%;
+}
+
+.nav-button-group {
+  margin-left: 20px;
+  padding-right: 20px;
+}
+
+.nav-button {
+  margin-right: 20px;
 }

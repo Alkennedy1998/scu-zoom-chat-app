@@ -1,29 +1,31 @@
-import React, {useState } from 'react';
-import { withFirebase } from '../../api/Firebase';
+/* eslint-disable react/prop-types */
+import React, {useState} from 'react';
+import {withFirebase} from '../../api/Firebase';
 
 import '../../App.css';
 
-const MessageForm = ({ username, firebase ,roomId})=>{
+const MessageForm = ({username, firebase, roomId})=>{
+  const [value, setValue] = useState('');
 
-  const [value,setValue] = useState('');
-
-  const handleChange = event => {
+  const handleChange = (event) => {
     setValue(event.target.value);
   };
 
-  const handleSubmit = event => {
-    const { displayName, uid, photoURL } = firebase.auth.currentUser;
+  const handleSubmit = (event) => {
+    const {displayName, uid, photoURL} = firebase.auth.currentUser;
 
     if (displayName != null) {
-      username = displayName;
+      // username = displayName;
+      localStorage.getValue('username');
     }
 
     firebase.firestore.collection(roomId).add({
       user: username,
       text: value,
-      createdAt: firebase.app.firestore.FieldValue.serverTimestamp(), // this might have an error with firebase.firestore (not the functioncall, firebase.firestore())
+      // error with firebase.firestore not function call, firebase.firestore())
+      createdAt: firebase.app.firestore.FieldValue.serverTimestamp(),
       uid: uid,
-      photoURL: photoURL
+      photoURL: photoURL,
     });
 
     setValue('');
@@ -31,22 +33,21 @@ const MessageForm = ({ username, firebase ,roomId})=>{
   };
 
 
-
-    return (
-      <form onSubmit={handleSubmit}>
-        <input
-          type='text'
-          value={value}
-          onChange={handleChange}
-          placeholder='Speak Your Mind' />
-        <button
-          type='submit'
-          disabled={!value}>
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type='text'
+        value={value}
+        onChange={handleChange}
+        placeholder='Speak Your Mind' />
+      <button
+        type='submit'
+        disabled={!value}>
             send
-        </button>
-      </form>
-    );
-}
+      </button>
+    </form>
+  );
+};
 
 
 export default withFirebase(MessageForm);

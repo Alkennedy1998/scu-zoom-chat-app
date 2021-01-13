@@ -1,47 +1,66 @@
-import React, { useEffect, useRef } from 'react';
-import { withFirebase } from '../../api/Firebase';
-import { useCollectionData } from 'react-firebase-hooks/firestore';
+/* eslint-disable react/prop-types */
+import React, {useEffect, useRef} from 'react';
+import {withFirebase} from '../../api/Firebase';
+import {useCollectionData} from 'react-firebase-hooks/firestore';
 
 import ChatMessage from '../ChatMessage';
 import MessageForm from '../MessageForm';
-import Navbar from '../Navbar';
 
-const ChatRoom = ({ firebase, username,props }) => {
-
-    //Ensure the user is signed in to access chat
-    if(!firebase.user){
-      props.history.push('/signin');
-    }
-    const {roomId} = this.props.match.params;
-
-    // we will use this to scroll to bottom of chat on page-reload and after sending a message
-    const dummy = useRef();
-
-    const messagesRef = firebase.firestore.collection(roomId);
-    //messagesRef.orderBy('createdAt', 'asc').limitToLast(50);
-    const query = messagesRef.orderBy('createdAt', 'asc').limitToLast(50);
-    const [messages] = useCollectionData(query, {idField: 'id'});
-
-
-    useEffect(() => {
-      dummy.current.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
-
-    return (
-      <>
-        <main>
-          {/* we will loop over the message and return a
-          ChatMessage component for each message */}
-          {messages && messages.map(msg =><ChatMessage key={msg.id} message={msg} firebase={firebase} />)}
-          <span ref={dummy}></span>
-        </main>
-
-        {/* Form to type and submit messages */}
-
-        <MessageForm username={username} roomId={roomId}/>
-      </>
-    )
+const ChatRoom = ({firebase, username, history, match}) => {
+  // Ensure the user is signed in to access chat
+  if (!firebase.user) {
+    // this is a big problem, change it :) make it with useEffect
+    // history.push('/signin');
   }
 
-  export default withFirebase(ChatRoom);
+  useEffect(() => {
+    const checkData = () => {
+      const user = localStorage.getItem('username');
+      if (user) {
+        username = user;
+      }
+    };
+
+    window.addEventListener('storage', checkData);
+
+    return () => {
+      window.removeEventListener('storage', checkData);
+    };
+  });
+  const {roomId} = match.params;
+
+  // used to scroll to bottom of chat
+  const dummy = useRef();
+
+  const messagesRef = firebase.firestore.collection(roomId);
+  // messagesRef.orderBy('createdAt', 'asc').limitToLast(50);
+  const query = messagesRef.orderBy('createdAt', 'asc').limitToLast(50);
+  const [messages] = useCollectionData(query, {idField: 'id'});
+
+
+  useEffect(() => {
+    dummy.current.scrollIntoView({behavior: 'smooth'});
+  }, [messages]);
+
+  return (
+    <>
+      <main>
+        {/* Loops over the message and return a
+          ChatMessage component for each message */}
+        {messages && messages.map((msg) =>
+          <ChatMessage
+            key={msg.id}
+            message={msg}
+            firebase={firebase}
+          />)
+        }
+        <span ref={dummy}></span>
+      </main>
+
+      <MessageForm username={username} roomId={roomId}/>
+    </>
+  );
+};
+
+export default withFirebase(ChatRoom);
 

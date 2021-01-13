@@ -1,3 +1,4 @@
+/* eslint-disable require-jsdoc */
 import app from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
@@ -13,6 +14,7 @@ const config = {
   measurementId: process.env.REACT_APP_MEASUREMENT_ID,
 };
 
+
 class Firebase {
   constructor() {
     app.initializeApp(config);
@@ -23,14 +25,18 @@ class Firebase {
     this.analytics = app.analytics();
   }
 
-  doSignInWithGoogle = () => {
+  doSignInWithGoogle() {
     const provider = new app.auth.GoogleAuthProvider();
     this.auth.signInWithPopup(provider);
-};
+  };
 
-  doSignInAnonymously = () => this.auth.signInAnonymously();
+  doSignInAnonymously() {
+    this.auth.signInAnonymously();
+  }
 
-  doSignOut = () => this.auth.signOut();
+  doSignOut() {
+    this.auth.signOut();
+  }
 }
 
 export default Firebase;
