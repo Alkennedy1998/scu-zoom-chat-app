@@ -26,7 +26,7 @@ function App({firebase}) {
   FirebaseAuth.addAuthStateListener(AuthStateListener);
 
   window.addEventListener('keydown', (event) => {
-    console.log('keydown :)');
+    console.log('keydown <:)');
   });
   return (
     <Router>
