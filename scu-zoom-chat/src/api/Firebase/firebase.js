@@ -27,15 +27,14 @@ class Firebase {
 
   doSignInWithGoogle() {
     const provider = new app.auth.GoogleAuthProvider();
-    this.auth.signInWithPopup(provider);
+    return this.auth.signInWithPopup(provider);
   };
 
   doSignInAnonymously() {
-    this.auth.signInAnonymously();
+    return this.auth.signInAnonymously();
   }
-
   doSignOut() {
-    this.auth.signOut();
+    return this.auth.signOut();
   }
 }
 

@@ -6,9 +6,11 @@ import '../../App.css';
 const AnonSignIn = ({setUsername, redirect, firebase}) => {
   const [value, setValue] = useState('');
 
+
   const handleChange = (event) => {
     setValue(event.target.value);
   };
+
 
   const handleSubmit = (event) => {
     event.preventDefault();

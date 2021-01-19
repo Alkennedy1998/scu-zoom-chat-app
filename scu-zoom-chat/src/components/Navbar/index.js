@@ -7,9 +7,6 @@ import MeetingRoomIcon from '@material-ui/icons/MeetingRoom';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 
 const Navbar = ({firebase, roomId, setRoomId, history}) =>{
-  const handleAboutClick = () => {
-    history.push('/about');
-  };
   return (
     <header className="header">
       <h1>SCU Zoom Chat</h1>
@@ -17,7 +14,8 @@ const Navbar = ({firebase, roomId, setRoomId, history}) =>{
 
         <span className='nav-button'>
           <AccountCircleIcon onClick={() => {
-            firebase.doSignOut(); history.push('');
+            firebase.doSignOut();
+            // history.push('');
           }} />
         </span>
 
@@ -25,7 +23,7 @@ const Navbar = ({firebase, roomId, setRoomId, history}) =>{
           <MeetingRoomIcon onClick={() => setRoomId('')} />
         </span>
         <span className='nav-button'>
-          <InfoIcon onClick={handleAboutClick}/>
+          <InfoIcon onClick={() => history.push('/about')}/>
         </span>
       </div>
     </header>

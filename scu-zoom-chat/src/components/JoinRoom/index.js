@@ -1,22 +1,26 @@
 /* eslint-disable react/prop-types */
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import sha256 from 'sha256';
 import {withRouter} from 'react-router-dom';
+import {withFirebase} from '../../api/Firebase';
 
 import '../../App.css';
-const JoinRoom =(props)=>{
+const JoinRoom = ({history, firebase}) => {
   const [zoomLink, setValue] = useState('');
 
-
-  const handleChange = (event) =>{
+  useEffect(() => {
+    if (!firebase.auth.currentUser) {
+      history.push('/signin');
+    }
+  }, []);
+  const handleChange = (event) => {
     setValue(event.target.value);
   };
 
   const handleSubmit = (event) => {
-    // switch to correct chat room
-    const roomId=(sha256(zoomLink).substring(0, 12));
-    console.log('Room ID:' + roomId);
-    props.history.push('/room/'+roomId);
+    // switch tso correct chat room
+    const roomId = (sha256(zoomLink).substring(0, 12));
+    history.push('/room/' + roomId);
     setValue('');
     event.preventDefault();
   };
@@ -33,7 +37,7 @@ const JoinRoom =(props)=>{
         placeholder="https://scu.zoom.us/..." />
       <button
         type="submit"
-        className = 'sign-in'
+        className='sign-in'
         disabled={!zoomLink}
         onClick={handleSubmit}
       >Enter
@@ -42,4 +46,4 @@ const JoinRoom =(props)=>{
   );
 };
 
-export default withRouter(JoinRoom);
+export default withFirebase(withRouter(JoinRoom));
