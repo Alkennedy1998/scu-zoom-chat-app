@@ -14,6 +14,10 @@ const config = {
   measurementId: process.env.REACT_APP_MEASUREMENT_ID,
 };
 
+// TODO: Ensure all firebase methods are functional
+
+//* The class which contains all firebase API calls
+//*  provided to the entire react project
 
 class Firebase {
   constructor() {

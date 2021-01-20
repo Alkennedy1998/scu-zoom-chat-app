@@ -46,4 +46,4 @@ const JoinRoom = ({history, firebase}) => {
   );
 };
 
-export default withFirebase(withRouter(JoinRoom));
+export default withRouter(withFirebase(JoinRoom));

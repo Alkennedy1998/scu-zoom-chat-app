@@ -6,13 +6,7 @@ import {useCollectionData} from 'react-firebase-hooks/firestore';
 import ChatMessage from '../ChatMessage';
 import MessageForm from '../MessageForm';
 
-const ChatRoom = ({firebase, username, history, match}) => {
-  // Ensure the user is signed in to access chat
-  if (!firebase.user) {
-    // this is a big problem, change it :) make it with useEffect
-    // history.push('/signin');
-  }
-
+const ChatRoom = ({firebase, username, match}) => {
   useEffect(() => {
     const checkData = () => {
       const user = localStorage.getItem('username');
@@ -63,4 +57,3 @@ const ChatRoom = ({firebase, username, history, match}) => {
 };
 
 export default withFirebase(ChatRoom);
-
