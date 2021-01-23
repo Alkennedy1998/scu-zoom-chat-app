@@ -8,10 +8,10 @@ import React from 'react';
 const SignInPage =({firebase, setUsername, roomId, history})=>{
   const redirect = () => {
     console.log(roomId);
-    history.push('/room/' + roomId);
+    // history.push('/room/' + roomId);
 
     if (!roomId) {
-      history.push('/');
+      // history.push('/');
     }
   };
 

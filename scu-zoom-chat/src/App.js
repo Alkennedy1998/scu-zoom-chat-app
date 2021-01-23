@@ -19,25 +19,26 @@ import {withFirebase} from './api/Firebase';
  * @return {void} rendered with the switch's choice.
  */
 const App = ({firebase, history}) => {
-  // const [user] = useAuthState(firebase.auth);
   const [username, setUsername] = useState('default');
   const [roomId, setRoomId] = useState('');
-  // const muiTheme = createMuiTheme(colorData);
 
   // ! Possibly calling API every time app rendered
   // todo Find a more efficient method
 
   useEffect(() => {
-    console.log('useEffectRunning');
     return firebase.auth.onAuthStateChanged((user) => {
-      console.log('Auth state Changed!');
+      console.log('Auth state Changed! : ' + user.uid);
       if (!user) {
-        console.log('push!!');
+        console.log('push, User: '+ user);
         history.push('/signin');
+      } else if (!roomId) {
+        console.log('Join room');
+        history.push('/');
       } else if (roomId) {
+        console.log('Joining Room: '+roomId);
         history.push('/room/roomId/'+roomId);
       } else {
-        history.push('/');
+        console.log('error: ' + roomId);
       }
     });
   }, []);

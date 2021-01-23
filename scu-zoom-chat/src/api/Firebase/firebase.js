@@ -34,10 +34,13 @@ class Firebase {
     return this.auth.signInWithPopup(provider);
   };
 
+
   doSignInAnonymously() {
     return this.auth.signInAnonymously();
   }
+
   doSignOut() {
+    console.log('Signed out user: ' + this.auth.user.id);
     return this.auth.signOut();
   }
 }

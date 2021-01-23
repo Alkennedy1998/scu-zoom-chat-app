@@ -4,12 +4,15 @@ import reportWebVitals from './reportWebVitals';
 import App from './App';
 import Firebase, {FirebaseContext} from './api/Firebase';
 import './index.css';
-import {BrowserRouter as Router} from 'react-router-dom';
+import {Router} from 'react-router-dom';
+import createHistory from 'history/createBrowserHistory';
+
+const history = createHistory({forceRefresh: false});
 
 ReactDOM.render(
     <React.StrictMode>
       <FirebaseContext.Provider value={new Firebase()}>
-        <Router >
+        <Router history={history}>
           <App/>
         </Router>
       </FirebaseContext.Provider>

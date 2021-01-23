@@ -15,7 +15,6 @@ const Navbar = ({firebase, roomId, setRoomId, history}) =>{
         <span className='nav-button'>
           <AccountCircleIcon onClick={() => {
             firebase.doSignOut();
-            // history.push('');
           }} />
         </span>
 

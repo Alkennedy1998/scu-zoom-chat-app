@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import sha256 from 'sha256';
 import {withRouter} from 'react-router-dom';
 import {withFirebase} from '../../api/Firebase';
@@ -8,11 +8,6 @@ import '../../App.css';
 const JoinRoom = ({history, firebase}) => {
   const [zoomLink, setValue] = useState('');
 
-  useEffect(() => {
-    if (!firebase.auth.currentUser) {
-      history.push('/signin');
-    }
-  }, []);
   const handleChange = (event) => {
     setValue(event.target.value);
   };
